@@ -1,4 +1,4 @@
-![KrISS logo](https://raw.github.com/yolateng0/KrISS_ynh/master/images/kriss_logo.png)
+![KrISS logo](KrISS_yng/images/kriss_logo.jpg)
 
 # KrISS package for YunoHost
 
@@ -11,4 +11,4 @@
 - `default_lang`: default language.
 - `is_public`: no public instance.
 
-![KrISS screenshot](https://raw.github.com/yolateng0/KrISS_ynh/master/images/screenshot.png)
+![KrISS screenshot](KrISS_ynh/images/screenshot.png)
