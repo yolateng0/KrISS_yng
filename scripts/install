@@ -39,10 +39,7 @@ sudo mkdir /var/www/kriss
 sudo cp /tmp/index.php /var/www/kriss/
 
 
-# Disable kriss login if checked
-if [[ $login -eq 1 ]]; then
-  sudo sed -i -- 's/\[LOGIN_REQUIRED\] = 1/\[LOGIN_REQUIRED\] = 0/g' "$src_path"/index.php
-fi
+
 
 # Set permissions to app files
 sudo chown -R root: $src_path
