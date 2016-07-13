@@ -4,6 +4,7 @@
 
 - [KrISS](http://http://tontof.net/kriss) package for [YunoHost](https://yunohost.org)
 - KrISS feed is a simple and smart (or stupid) feed reader. .
+- It does not require SQL or database.
 
 #### Installation arguments
 
