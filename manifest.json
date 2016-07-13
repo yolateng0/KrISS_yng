@@ -8,7 +8,8 @@
     },
     "url": "http://tontof.net/kriss/feed/",
     "license": "free",
-    "maintainers": [
+    "maintainers": 
+    [
         {
             "name": "yolateng0",
             "email": "42@yo.nohost.me"
@@ -68,7 +69,7 @@
                     "en": "Default language",
                     "fr": "Langue par défaut"
                 },
-                "choices": ["de","en","es","fr"],
+                "choices": ["en","fr"],
                 "default": "en"
             }
         ]
