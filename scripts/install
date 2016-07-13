@@ -20,8 +20,7 @@ path=$YNH_APP_ARG_PATH
 
 is_public=$YNH_APP_ARG_IS_PUBLIC
 
-dash=$YNH_APP_ARG_DASH
-dash_bool=$YNH_APP_ARG_DASH_BOOL
+
 
 # Source YunoHost helpers
 source /usr/share/yunohost/helpers
