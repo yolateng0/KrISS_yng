@@ -1,76 +1,67 @@
 #!/bin/bash
 
-source .fonctions	# Charge les fonctions génériques habituellement utilisées dans le script
-
-YNH_VERSION	# Récupère le numéro de version de Yunohost.
-
-CLEAN_SETUP () {
-# Nettoyage des résidus d'installation non pris en charge par le script remove.
-# Pas de nettoyage supplémentaire nécessaire ici...
-	echo ""
-}
-TRAP_ON # Active trap pour arrêter le script si une erreur est détectée.
-
 # Exit on command errors and treat unset variables as an error
 set -eu
 
-# Retrieve arguments
+# The id of the app as stated in the manifest is available as $YNH_APP_ID
+# The instance number is available as $YNH_APP_INSTANCE_NUMBER (equals "1", "2", ...)
+# The app instance name is available as $YNH_APP_INSTANCE_NAME
+#    - the first time the app is installed, YNH_APP_INSTANCE_NAME = ynhexample
+#    - the second time the app is installed, YNH_APP_INSTANCE_NAME = ynhexample__2
+#    - ynhexample__{N} for the subsequent installations, with N=3,4, ...
+# The app instance name is probably what you are interested the most, since this is
+# guaranteed to be unique. This is a good unique identifier to define installation path,
+# db names, ...
 app=$YNH_APP_INSTANCE_NAME
+
+# Retrieve arguments
 domain=$YNH_APP_ARG_DOMAIN
 path=$YNH_APP_ARG_PATH
 admin=$YNH_APP_ARG_ADMIN
-password=$YNH_APP_ARG_PASSWORD
 is_public=$YNH_APP_ARG_IS_PUBLIC
-default_lang=$YNH_APP_ARG_DEFAULT_LANG
+login=$YNH_APP_ARG_LOGIN
 
 # Source YunoHost helpers
 source /usr/share/yunohost/helpers
-
-# Remove trailing slash
-[ "$path" != "/" ] && path=${path%/}
-
-# Check domain/path availability
-sudo yunohost app checkurl "${domain}${path}" -a "$app" \
-    || ynh_die "Path not available: ${domain}${path}"
-
-# Check the admin exists in YunoHost users
-ynh_user_exists $admin
 
 # Save app settings
 ynh_app_setting_set "$app" admin "$admin"
 ynh_app_setting_set "$app" is_public "$is_public"
 
-# Create path for copying
+# Check domain/path availability
+sudo yunohost app checkurl "${domain}${path}" -a "$app" \
+    || ynh_die "Path not available: ${domain}${path}"
+
+# Copy source files
 src_path=/var/www/$app
 sudo mkdir -p $src_path
+sudo wget https://raw.github.com/tontof/kriss_feed/master/index.php -O /tmp/index.php
+sudo mkdir /var/www/kriss
+sudo cp /tmp/index.php /var/www/kriss/
 
-# Retrieve sources and install them
-version=$(cat ../conf/upstream_version)
-wget -nc --quiet https://github.com/tontof/kriss_feed.git -P /tmp
 
+# Disable kriss login if checked
+if [[ $login -eq 1 ]]; then
+  sudo sed -i -- 's/\[LOGIN_REQUIRED\] = 1/\[LOGIN_REQUIRED\] = 0/g' "$src_path"/index.php
+fi
 
-# Set permissions
+# Set permissions to app files
 sudo chown -R root: $src_path
-sudo chown -R www-data: $src_path/{data,plugins}
-sudo find $src_path -type f -exec chmod 644 {} +
-sudo find $src_path -type d -exec chmod 755 {} +
+sudo chmod -R ga+w $src_path/data
 
-# Configure nginx settings
-folder_path=${path%/}
-sudo sed -i "s@YNH_EXAMPLE_PATH@$path@g" ../conf/nginx.conf
-# If path is only / (without subfolder), add trailing slash to alias
-alias_path=$src_path
-nginx_conf="../conf/nginx.conf"
-[ "$path" == '/' ] && alias_path=$alias_path'/'
-sudo sed -i "s@YNH_EXAMPLE_ALIAS@$alias_path@g" $nginx_conf
-sudo sed -i "s@YNH_EXAMPLE_FOLDER@$folder_path@g" $nginx_conf
+
+# Modify Nginx configuration file and copy it to Nginx conf directory
+nginx_conf=../conf/nginx.conf
+sed -i "s@YNH_WWW_PATH@$path@g" $nginx_conf
+sed -i "s@YNH_WWW_ALIAS@$src_path/@g" $nginx_conf
 sudo cp $nginx_conf /etc/nginx/conf.d/$domain.d/$app.conf
 
-# Temporary set public accessible
-ynh_app_setting_set "$app" unprotected_uris "/"
+# If app is public, add url to SSOWat conf as skipped_uris
+if [[ $is_public -eq 1 ]]; then
+  # unprotected_uris allows SSO credentials to be passed anyway.
+  ynh_app_setting_set "$app" unprotected_uris "/"
+fi
 
 # Reload services
 sudo service nginx reload
-sudo yunohost app ssowatconf
-
-
+echo "Open $domain$path/installcheck.php for troubleshooting guide."
