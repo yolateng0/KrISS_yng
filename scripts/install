@@ -3,61 +3,52 @@
 # Exit on command errors and treat unset variables as an error
 set -eu
 
-# The id of the app as stated in the manifest is available as $YNH_APP_ID
-# The instance number is available as $YNH_APP_INSTANCE_NUMBER (equals "1", "2", ...)
-# The app instance name is available as $YNH_APP_INSTANCE_NAME
-#    - the first time the app is installed, YNH_APP_INSTANCE_NAME = ynhexample
-#    - the second time the app is installed, YNH_APP_INSTANCE_NAME = ynhexample__2
-#    - ynhexample__{N} for the subsequent installations, with N=3,4, ...
-# The app instance name is probably what you are interested the most, since this is
-# guaranteed to be unique. This is a good unique identifier to define installation path,
-# db names, ...
-app=$YNH_APP_INSTANCE_NAME
+#!/bin/bash
 
 # Retrieve arguments
-domain=$YNH_APP_ARG_DOMAIN
-path=$YNH_APP_ARG_PATH
-is_public=$YNH_APP_ARG_IS_PUBLIC
-
-
-# Source YunoHost helpers
-source /usr/share/yunohost/helpers
-
-# Save app settings
-
-ynh_app_setting_set "$app" is_public "$is_public"
+domain=$1
+path=$2
+is_public=$3
 
 # Check domain/path availability
-sudo yunohost app checkurl "${domain}${path}" -a "$app" \
-    || ynh_die "Path not available: ${domain}${path}"
-
-# Copy source files
-src_path=/var/www/$app
-sudo mkdir -p $src_path
-sudo wget https://github.com/tontof/kriss_feed/master/index.php -O /tmp/index.php
-sudo mkdir /var/www/kriss
-sudo cp /tmp/index.php /var/www/kriss/
-
-
-
-
-# Set permissions to app files
-sudo chown -R root: $src_path
-sudo chmod -R ga+w $src_path/data
-
-
-# Modify Nginx configuration file and copy it to Nginx conf directory
-nginx_conf=../conf/nginx.conf
-sed -i "s@YNH_WWW_PATH@$path@g" $nginx_conf
-sed -i "s@YNH_WWW_ALIAS@$src_path/@g" $nginx_conf
-sudo cp $nginx_conf /etc/nginx/conf.d/$domain.d/$app.conf
-
-# If app is public, add url to SSOWat conf as skipped_uris
-if [[ $is_public -eq 1 ]]; then
-  # unprotected_uris allows SSO credentials to be passed anyway.
-  ynh_app_setting_set "$app" unprotected_uris "/"
+sudo yunohost app checkurl $domain$path -a kriss
+if [[ ! $? -eq 0 ]]; then
+    exit 1
 fi
 
-# Reload services
+# Remove trailing "/" for next commands
+if [[ ! "$path" == "/" ]]; then
+    path=${path%/}
+fi
+
+# Copy files to the right place
+final_path=/var/www/kriss
+sudo mkdir -p $final_path
+sudo cp -a ../sources/* $final_path
+
+# Files owned by root, www-data can just read
+sudo find $final_path -type f | xargs sudo chmod 644
+sudo find $final_path -type d | xargs sudo chmod 755
+sudo chown -R root: $final_path
+
+# except for data and tmp subdir, where www-data must have write permissions
+sudo mkdir -p $final_path/{data,tmp}
+sudo chown www-data:root $final_path/{data,tmp}
+sudo chmod 700 $final_path/{data,tmp}
+
+# Modify Nginx configuration file and copy it to Nginx conf directory
+sed -i "s@YNH_WWW_PATH@$path@g" ../conf/nginx.conf
+sed -i "s@YNH_WWW_ALIAS@$final_path/@g" ../conf/nginx.conf
+nginxconf=/etc/nginx/conf.d/$domain.d/zerobin.conf
+sudo cp ../conf/nginx.conf $nginxconf
+sudo chown root: $nginxconf
+sudo chmod 600 $nginxconf
+
+sudo yunohost app setting zerobin is_public -v "$is_public"
+if [ "$is_public" = "Yes" ];
+then
+  sudo yunohost app setting zerobin unprotected_uris -v "/"
+fi
+
 sudo service nginx reload
-echo "Open $domain$path/installcheck.php for troubleshooting guide."
+sudo yunohost app ssowatconf
