@@ -4,13 +4,13 @@
     "packaging_format": 1,
     "description": {
         "en": "A simple and smart (or stupid) feed reader..",
-        "fr": "Blog ou CMS à l’Xml, rapide et léger sans base de données."
+        "fr": "Un simple et smart (ou stupide) lecteur de flux rss avecd juste un page index sur votre serveur."
     },
     "url": "http://tontof.net/kriss/feed/",
     "license": "free",
     "maintainers": [
         {
-            "name": "yolaten0",
+            "name": "yolateng0",
             "email": "yo.nohost.me"
         },
 	    ],
