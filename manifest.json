@@ -44,16 +44,7 @@
                 "example": "/kriss",
                 "default": "/kriss"
             },
-            {
-                "name": "admin",
-                "type": "user",
-                "ask": {
-                    "en": "Choose an admin user for KrISS",
-                    "fr": "Choisissez l’administrateur de KrISS"
-                },
-                "example": "homer"
-            },
-           
+
             {
                 "name": "is_public",
                 "ask": {
