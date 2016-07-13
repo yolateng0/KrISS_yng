@@ -9,12 +9,12 @@
     "url": "http://tontof.net/kriss/feed/",
     "license": "free",
     "maintainers": 
-    [
+    
         {
             "name": "yolateng0",
             "email": "42@yo.nohost.me"
         },
-	    ],
+	    
     "requirements": {
         "yunohost": ">> 2.4.0"
     },
