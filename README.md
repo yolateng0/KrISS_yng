@@ -1,4 +1,4 @@
-![KrISS logo](https://raw.github.com/yolateng0/KrISS_ynh/master/images/pluxml_logo.png)
+![KrISS logo](https://raw.github.com/yolateng0/KrISS_ynh/master/images/kriss_logo.png)
 
 # KrISS package for YunoHost
 
@@ -9,6 +9,6 @@
 
 - `admin`: administrator of the KrISS instance. Access on `domain.tld/path/core/admin`.
 - `default_lang`: default language.
-- `is_public`: public instance.
+- `is_public`: no public instance.
 
 ![KrISS screenshot](https://raw.github.com/yolateng0/KrISS_ynh/master/images/screenshot.png)
