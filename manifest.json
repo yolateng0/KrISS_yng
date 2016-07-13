@@ -1,0 +1,76 @@
+{
+    "name": "KrISS",
+    "id": "KrISS",
+    "packaging_format": 1,
+    "description": {
+        "en": "A simple and smart (or stupid) feed reader..",
+        "fr": "Blog ou CMS à l’Xml, rapide et léger sans base de données."
+    },
+    "url": "http://tontof.net/kriss/feed/",
+    "license": "free",
+    "maintainers": [
+        {
+            "name": "yolaten0",
+            "email": "yo.nohost.me"
+        },
+	    ],
+    "requirements": {
+        "yunohost": ">> 2.4.0"
+    },
+    "multi_instance": true,
+    "services": [
+        "nginx",
+        "php5-fpm"
+    ],
+    "arguments": {
+        "install" : [
+            {
+                "name": "domain",
+                "type": "domain",
+                "ask": {
+                    "en": "Choose a domain for KrISS",
+                    "fr": "Choisissez un nom de domaine pour KrISS"
+                },
+                "example": "domain.org"
+            },
+            {
+                "name": "path",
+                "type": "path",
+                "ask": {
+                    "en": "Choose a path for KrISS",
+                    "fr": "Choisissez un chemin pour KrISS"
+                },
+                "example": "/kriss",
+                "default": "/kriss"
+            },
+            {
+                "name": "admin",
+                "type": "user",
+                "ask": {
+                    "en": "Choose an admin user for KrISS",
+                    "fr": "Choisissez l’administrateur de KrISS"
+                },
+                "example": "homer"
+            },
+           
+            {
+                "name": "is_public",
+                "ask": {
+                    "en": "Should this application be public?",
+                    "fr": "Est-ce que cette application doit être visible publiquement ?"
+                },
+                "choices": ["Yes", "No"],
+                "default": "No"
+            },
+            {
+                "name": "default_lang",
+                "ask": {
+                    "en": "Default language",
+                    "fr": "Langue par défaut"
+                },
+                "choices": ["de","en","es","fr"],
+                "default": "en"
+            }
+        ]
+    }
+}
