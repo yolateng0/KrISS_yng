@@ -29,7 +29,7 @@ sudo cp -a ../sources/* $final_path
 # Modify Nginx configuration file and copy it to Nginx conf directory
 sed -i "s@YNH_WWW_PATH@$path@g" ../conf/nginx.conf
 sed -i "s@YNH_WWW_ALIAS@$final_path/@g" ../conf/nginx.conf
-nginxconf=/etc/nginx/conf.d/$domain.d/zerobin.conf
+nginxconf=/etc/nginx/conf.d/$domain.d/kriss.conf
 sudo cp ../conf/nginx.conf $nginxconf
 sudo chown root: $nginxconf
 sudo chmod 600 $nginxconf
@@ -37,7 +37,7 @@ sudo chmod 600 $nginxconf
 sudo yunohost app setting zerobin is_public -v "$is_public"
 if [ "$is_public" = "Yes" ];
 then
-  sudo yunohost app setting zerobin unprotected_uris -v "/"
+  sudo yunohost app setting kriss unprotected_uris -v "/"
 fi
 
 sudo service nginx reload
