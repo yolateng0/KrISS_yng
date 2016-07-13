@@ -1,6 +1,6 @@
 ![KrISS logo](https://github.com/yolateng0/KrISS_yng/blob/master/images/kriss_logo.jpg)
 
-# KrISS package for YunoHost
+# KrISS package for YunoHost 2.4
 
 - [KrISS](http://http://tontof.net/kriss) package for [YunoHost](https://yunohost.org)
 - KrISS feed is a simple and smart (or stupid) feed reader. .
