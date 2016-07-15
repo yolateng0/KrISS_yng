@@ -1,0 +1,99 @@
+file="kriss_feed.php"
+
+INTL_DIR=po
+INTL_DOMAIN=messages
+
+xgettext --from-code=UTF-8 --no-location --add-comments=KrISS --keyword=msg:1 --keyword=msg:1,2c --keyword=n_msg:1,2 --keyword=n_msg:1,2,4c $file class/*.php tmp/*.php -o $INTL_DIR/$INTL_DOMAIN/$INTL_DOMAIN.pot
+sed -i "s:CHARSET:UTF-8:g" $INTL_DIR/$INTL_DOMAIN/$INTL_DOMAIN.pot
+
+function echoerr() {
+  echo "$@" 1>&2;
+}
+
+# generate Intl plugins
+for i in $INTL_DIR/$INTL_DOMAIN/*.po
+do
+  lang=$(basename ${i/.po/})
+  lang2letters=$(echo $lang | cut -d '_' -f 2 | tr '[A-Z]' '[a-z]')
+  language=$(grep "Language:" ${i} | cut -d " " -f 2- | sed -e 's:\\n"::')
+  intlFile="plugins/Intl_${lang}.php"
+  echo '<?php' > ${intlFile}
+  echo "if (!class_exists('Intl_$lang')) {" >> ${intlFile}
+  echo "    class Intl_$lang {" >> ${intlFile}
+  echo '        public static function init(&$messages) {' >> ${intlFile}
+  echo '            $messages['"'$lang'"'] = unserialize(gzinflate(base64_decode("' >> ${intlFile} 
+  php5 -r "include('class/Plugin.php');include('class/Intl.php');echo base64_encode(gzdeflate(serialize(Intl::load('$lang'))));" >> ${intlFile}
+  echo '")));' >> ${intlFile}
+  echo '        }' >> ${intlFile}
+  echo '    }' >> ${intlFile}
+  echo "    Intl::addLang('$lang', '$language', 'flag-$lang2letters');" >> ${intlFile}
+  echo '}' >> ${intlFile}
+  echo  >> ${intlFile}
+done
+
+
+n=$(\grep "function __autoload" ${file} -n | cut -d ":" -f 1)
+nt=$(cat ${file} | wc -l)
+
+function removeComments {
+ sed -e '/\/\*\*/,/*\//d;'
+}
+
+delim1="<\?php include\(\""
+delim2="\"); \?>"
+
+function catFile {
+  fileOutput=$(file $1)
+  if [[ "$fileOutput" == *text* ]]
+  then
+    cat $1
+  else
+    base64 $1
+  fi
+}
+
+# Thanks Fred 
+function includeFile {
+  while IFS='' read -r line
+  do
+    if [[ $line =~ ${delim1} ]]
+    then
+        fic1=${line##*${delim1}}
+        fic2=${fic1%${delim2}*}
+
+        if [ -f $fic2 ]
+        then
+          catFile $fic2
+        else
+          if [ -f class/$fic2 ]
+          then
+            catFile class/$fic2
+          else
+            if [[ "$fic2" == "plugins" ]]
+            then
+              for i in plugins/*.php
+              do
+                echo -n "del>"
+                cat $i
+              done | sed -e 's:del><?php::g' | removeComments
+            else
+              echoerr "erreur catFile $fic2"
+            fi
+          fi
+        fi
+    else
+        printf "%s\n" "$line"
+    fi
+  done
+}
+
+head -n $((${n} - 1)) ${file} | removeComments
+
+# includeFile twice for templates that also include file
+for i in class/*.php
+do
+ echo -n "del>"
+ cat $i | includeFile | includeFile
+done | sed -e 's:del><?php::g' | removeComments
+
+tail -n $(( ${nt} - $((${n} + 5)) )) ${file} | removeComments | includeFile
