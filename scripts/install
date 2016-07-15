@@ -73,5 +73,4 @@ sudo cp $nginx_conf /etc/nginx/conf.d/$domain.d/$app.conf
 #fi
 
 # Reload services
-sudo service ssowat reload
 sudo service nginx reload
