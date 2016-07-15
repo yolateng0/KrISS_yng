@@ -67,10 +67,11 @@ sudo cp $nginx_conf /etc/nginx/conf.d/$domain.d/$app.conf
 ### PHP end ###
 
 # If app is public, add url to SSOWat conf as skipped_uris
-if [[ $is_public -eq 1 ]]; then
+#if [[ $is_public -eq 1 ]]; then
   # unprotected_uris allows SSO credentials to be passed anyway.
-  ynh_app_setting_set "$app" unprotected_uris "/"
-fi
+#  ynh_app_setting_set "$app" unprotected_uris "/"
+#fi
 
 # Reload services
+sudo service ssowat reload
 sudo service nginx reload
